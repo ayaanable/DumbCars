@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Car Racing Game</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      background: #333;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      font-family: sans-serif;
+    }
+
+    #game {
+      width: 400px;
+      height: 600px;
+      background: #555;
+      position: relative;
+      overflow: hidden;
+      border: 5px solid #fff;
+    }
+
+    .road-line {
+      width: 10px;
+      height: 80px;
+      background: white;
+      position: absolute;
+      left: 195px;
+    }
+
+    #player {
+      width: 50px;
+      height: 100px;
+      background: red;
+      position: absolute;
+      bottom: 20px;
+      left: 175px;
+      border-radius: 10px;
+    }
+
+    .enemy {
+      width: 50px;
+      height: 100px;
+      background: yellow;
+      position: absolute;
+      top: -120px;
+      border-radius: 10px;
+    }
+
+    #score {
+      position: absolute;
+      top: 10px;
+      left: 10px;
+      color: white;
+      font-size: 18px;
+      font-weight: bold;
+    }
+
+    #game-over {
+      position: absolute;
+      top: 45%;
+      width: 100%;
+      text-align: center;
+      color: red;
+      font-size: 30px;
+      font-weight: bold;
+      display: none;
+    }
+  </style>
+</head>
+<body>
+  <div id="game">
+    <div id="score">Score: 0</div>
+    <div id="player"></div>
+    <div id="game-over">💥 Game Over 💥<br>Press F5 to Restart</div>
+  </div>
+
+  <script>
+    const game = document.getElementById('game');
+    const player = document.getElementById('player');
+    const scoreEl = document.getElementById('score');
+    const gameOverText = document.getElementById('game-over');
+
+    let playerX = 175;
+    let speed = 5;
+    let score = 0;
+    let keys = {};
+
+    document.addEventListener('keydown', e => keys[e.key] = true);
+    document.addEventListener('keyup', e => keys[e.key] = false);
+
+    // Create road lines
+    for (let i = 0; i < 6; i++) {
+      let line = document.createElement('div');
+      line.classList.add('road-line');
+      line.style.top = `${i * 120}px`;
+      game.appendChild(line);
+    }
+
+    // Create enemy cars
+    let enemies = [];
+    for (let i = 0; i < 3; i++) {
+      let enemy = document.createElement('div');
+      enemy.classList.add('enemy');
+      enemy.style.left = `${Math.floor(Math.random() * 3) * 120 + 40}px`;
+      enemy.style.top = `${-i * 300}px`;
+      game.appendChild(enemy);
+      enemies.push(enemy);
+    }
+
+    function updateGame() {
+      // Move player
+      if (keys['ArrowLeft'] && playerX > 0) playerX -= 5;
+      if (keys['ArrowRight'] && playerX < 350) playerX += 5;
+      player.style.left = `${playerX}px`;
+
+      // Move road lines
+      document.querySelectorAll('.road-line').forEach(line => {
+        let top = parseInt(line.style.top);
+        top += speed;
+        if (top > 600) top = -80;
+        line.style.top = `${top}px`;
+      });
+
+      // Move enemies
+      enemies.forEach(enemy => {
+        let top = parseInt(enemy.style.top);
+        top += speed;
+        if (top > 600) {
+          top = -200;
+          enemy.style.left = `${Math.floor(Math.random() * 3) * 120 + 40}px`;
+          score++;
+          scoreEl.textContent = `Score: ${score}`;
+        }
+        enemy.style.top = `${top}px`;
+
+        // Collision detection
+        if (
+          top + 100 > 500 &&
+          top < 600 &&
+          Math.abs(playerX - parseInt(enemy.style.left)) < 50
+        ) {
+          gameOverText.style.display = 'block';
+          cancelAnimationFrame(animationId);
+          return;
+        }
+      });
+
+      animationId = requestAnimationFrame(updateGame);
+    }
+
+    let animationId = requestAnimationFrame(updateGame);
+  </script>
+</body>
+</html>
